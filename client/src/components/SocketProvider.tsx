@@ -7,9 +7,9 @@ const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    const newSocket = io("http://localhost:3001", {
+    const socketUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
+    const newSocket = io(socketUrl, {
       withCredentials: true,
-      transports: ["websocket"],
     });
 
     setSocket(newSocket);
@@ -18,9 +18,7 @@ const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, []);
 
-  return (
-    <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>
-  );
+  return <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>;
 };
 
 export { SocketContext, SocketProvider };

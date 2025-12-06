@@ -1,12 +1,10 @@
+import { io } from "./index";
 import { logger } from "./utils/logger";
 
 type Comment = { user: string; comment: string; followRole: string };
 
 let queue: Comment[] = [];
 const maxSize = 10;
-let io: any = null;
-
-export const initialize = (socketIo: any) => (io = socketIo);
 
 const emitQueueUpdate = () => {
   if (!io) return console.log("Socket.io not initialized, cannot emit queue update");
@@ -37,7 +35,7 @@ export const deleteComment = (i: number) => {
 
 export const size = () => queue.length;
 
-export const clear = () => {
+export const clearQueue = () => {
   queue = [];
   logger.info("Queue cleared");
   emitQueueUpdate();

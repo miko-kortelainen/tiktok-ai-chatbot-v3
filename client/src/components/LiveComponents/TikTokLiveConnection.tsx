@@ -1,3 +1,4 @@
+import { tiktokLiveService } from "../../services/tiktokLiveService";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { SocketContext } from "../SocketProvider";
 import UsernameInput from "../UsernameInput";
@@ -13,16 +14,16 @@ const TikTokLiveConnection = () => {
     setUsername(event.target.value);
   };
 
-  const startLiveConnection = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const startLiveConnection = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-    if (!socket) return console.error("Socket is not available");
-
-    if (!socket.connected) {
-      return; // Prevent username submission if not connected to socket
+    if (!socket || !socket?.connected) {
+      console.log("Socket not avaible");
+      return;
     }
 
-    socket.emit("TikTokUsername", username);
+    console.log("Trying connection to live of user: ", username);
+    tiktokLiveService.startLiveConnection(username);
     setUsername("");
   };
 

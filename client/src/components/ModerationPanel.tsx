@@ -1,20 +1,9 @@
-/**
- *
- *  This component renders a moderation panel "page" for managing the tiktok live comment moderation.
- *  It receives queue updates from the server via a socket connection and allows deleting comments & adding test comments.
- *  Route: /moderation
- *
- */
-
-//#region Imports
 import { useContext, useEffect, useState } from "react";
 import ModQueuePanel from "./ModQueuePanel.tsx";
 import PromptEditPanel from "./PromptEditPanel.tsx";
 import { SocketContext } from "./SocketProvider.tsx";
 import TestCommentPanel from "./TestCommentPanel.tsx";
-//#endregion
-
-//css
+import axios from "axios";
 import "./css/ModerationPanel.css";
 
 interface QueueItem {
@@ -63,26 +52,11 @@ function ModerationPanel() {
   };
 
   // Handle deletion of a comment from the queue
-  const deleteComment = (index: number) => {
-    fetch("/api/deleteComment", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ index }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          // The queue will be updated automatically via the socket update
-        } else {
-          setError("Failed to delete the comment");
-        }
-      })
-      .catch((error) => {
-        console.error("Error deleting comment:", error);
-        setError("Failed to delete the comment.");
-      });
+  const deleteComment = async (index: number) => {
+    const response = await axios.delete("/api/deleteComment", {
+      data: { index },
+    });
+    if (response.status !== 200) setError("Failed to delete comment. Please try again.");
   };
 
   // Function to generate a random comment on the queue for testing purposes
@@ -105,9 +79,9 @@ function ModerationPanel() {
       user: randomUser,
       comment: randomComment,
       followRole: randomRole.toString(),
-    }
+    };
 
-    return comment
+    return comment;
   };
 
   // Function to add a random comment item to the queue

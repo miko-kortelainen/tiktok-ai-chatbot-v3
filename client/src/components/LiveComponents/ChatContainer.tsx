@@ -35,7 +35,7 @@ const ChatContainer = () => {
   const [isTyping, setIsTyping] = useState(false);
 
   const addMsg = (m: Message) =>
-    setMessages(prev => {
+    setMessages((prev) => {
       const newMsgs = prev.length >= MAX_MESSAGES ? [m] : [...prev, m];
       setIsTyping(newMsgs.length === 1);
       return newMsgs;
@@ -54,13 +54,20 @@ const ChatContainer = () => {
 
       const blob = res.data;
       const audio = new Audio(URL.createObjectURL(blob));
-      audio.play();
 
       audio.onended = () => {
+        console.log("Audio playback ended");
         socket.emit("TextToSpeechStatus", { status: "ended" });
       };
 
-    } catch {
+      audio.onerror = (err) => {
+        console.error("Audio playback error:", err);
+        socket.emit("TextToSpeechStatus", { status: "error" });
+      };
+
+      await audio.play();
+    } catch (err) {
+      console.error("TTS fetch error:", err);
       socket.emit("TextToSpeechStatus", { status: "error" });
     }
   };
@@ -77,7 +84,12 @@ const ChatContainer = () => {
 
     const onComment = (data: Comment) => {
       if (data.type === "comment") {
-        addMsg({ username: data.commentUsername, commentText: data.commentText, followRole: data.followRole, className: "comment" });
+        addMsg({
+          username: data.commentUsername,
+          commentText: data.commentText,
+          followRole: data.followRole,
+          className: "comment",
+        });
       }
     };
 
@@ -96,7 +108,9 @@ const ChatContainer = () => {
 
   return (
     <div className="chat-container">
-      {messages.map((m, i) => <MessageBox key={i} message={m} />)}
+      {messages.map((m, i) => (
+        <MessageBox key={i} message={m} />
+      ))}
       <TypingIndicator isTyping={isTyping} />
     </div>
   );

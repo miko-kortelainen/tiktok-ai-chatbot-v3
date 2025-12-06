@@ -1,0 +1,21 @@
+# Development Dockerfile with hot reloading
+
+# Frontend
+FROM node:24 AS frontend
+WORKDIR /app
+COPY client/package*.json ./
+RUN npm ci
+COPY client ./
+EXPOSE 8081
+CMD ["npm", "run", "dev", "--", "--host"]
+
+# Backend
+FROM node:24 AS backend
+WORKDIR /app
+COPY server/package*.json ./
+RUN npm ci
+
+RUN npm install -D tsx
+COPY server ./
+EXPOSE 8080
+CMD ["npm", "run", "dev:watch"]

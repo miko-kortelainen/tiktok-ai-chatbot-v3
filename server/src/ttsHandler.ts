@@ -8,7 +8,6 @@ const openai = new OpenAI({
   apiKey: config.openAiApiKey,
 });
 
-
 // endpoint /audio
 export async function handleAudioRequest(req: Request, res: Response) {
   try {
@@ -34,7 +33,7 @@ async function generateTextToSpeech(text: string): Promise<string> {
     model: "gpt-4o-mini-tts",
     voice: "coral",
     input: text,
-    instructions: "Speak in a cheerful and positive tone."
+    instructions: "Speak in a cheerful and positive tone.",
   });
 
   const buffer = Buffer.from(await response.arrayBuffer());
@@ -49,9 +48,8 @@ async function streamSpeechFile(res: Response, filePath: string) {
   fileStream.pipe(res);
 
   fileStream.on("end", async () => {
-    console.log("TTS file sent and stream ended");
+    console.log("TTS done streaming.");
     await fs.promises.unlink(filePath);
-    console.log("TTS file deleted after sending");
   });
 
   fileStream.on("error", (err) => {
