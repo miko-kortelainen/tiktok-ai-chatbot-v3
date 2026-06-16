@@ -1,13 +1,12 @@
 {
   "compilerOptions": {
-    "target": "ES2015",
-    "module": "nodenext",
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "strict": true,
     "outDir": "./dist",
     "rootDir": "./src",
     "skipLibCheck": true
   },
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }
