@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "devDependencies": {
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.4",
     "@types/ws": "^8.18.1",
     "dotenv": "^17.2.3",
