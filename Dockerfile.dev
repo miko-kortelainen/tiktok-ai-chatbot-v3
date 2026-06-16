@@ -1,7 +1,7 @@
 # Development Dockerfile with hot reloading
 
 # Frontend
-FROM node:24-slim AS frontend
+FROM node:24 AS frontend
 
 WORKDIR /app
 
@@ -19,7 +19,7 @@ EXPOSE 8081
 CMD ["pnpm", "run", "dev", "--", "--host"]
 
 # Backend
-FROM node:24-slim AS backend
+FROM node:24 AS backend
 
 WORKDIR /app
 
