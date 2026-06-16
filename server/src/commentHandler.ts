@@ -1,7 +1,7 @@
 import { io } from "./index";
 import { logger } from "./utils/logger";
-import gptHandler = require("./gptHandler.js");
-import commentQueue = require("./commentQueue.js");
+import { enqueue, dequeue, size } from "./commentQueue";
+import { handleAnswer } from "./gptHandler";
 
 let allowCommentProcessing: boolean = true;
 let prevComment: string;
@@ -25,7 +25,7 @@ export function handleComment(user: string, comment: string, followRole: string)
 
   // Adds comment to queue if another is being already processed, otherwise just process the comment.
   if (!allowCommentProcessing) {
-    const addedToQueue = commentQueue.enqueue({ user, comment, followRole }); // Add comment to queue
+    const addedToQueue = enqueue({ user, comment, followRole }); // Add comment to queue
     if (!addedToQueue) {
       logger.info("IGNORING COMMENT: Queue is full"); // Log that the comment was not added to the queue
     }
@@ -43,7 +43,7 @@ export function processComment(user: string, comment: string, followRole: string
   const formattedComment = `${user}: ${comment}`; // Format the comment with the username and the comment (e.g. "username: comment")
 
   // Sends the comment with the needed parameters to the GPT handler
-  gptHandler.handleAnswer(formattedComment, followRole);
+  handleAnswer(formattedComment, followRole);
 
   // Emits the comment to the frontend
   io.emit("Comment", {
@@ -55,12 +55,12 @@ export function processComment(user: string, comment: string, followRole: string
 }
 
 export function checkQueueForComments() {
-  logger.info(`Checking queue... Size: ${commentQueue.size()}, allowCommentProcessing: ${allowCommentProcessing}`);
-  if (commentQueue.size() > 0) {
-    const nextComment = commentQueue.dequeue();
+  logger.info(`Checking queue... Size: ${size()}, allowCommentProcessing: ${allowCommentProcessing}`);
+  if (size() > 0) {
+    const nextComment = dequeue();
     if (nextComment) {
       // Check if nextComment is not undefined
-      logger.queue(`Processing next comment from queue. Queue size is now: ${commentQueue.size()}`);
+      logger.queue(`Processing next comment from queue. Queue size is now: ${size()}`);
       processComment(nextComment.user, nextComment.comment, nextComment.followRole);
     }
   } else {

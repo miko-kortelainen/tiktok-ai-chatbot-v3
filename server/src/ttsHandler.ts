@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import OpenAI from "openai";
 import { config } from "./config/config";
-import fs = require("fs");
-import path = require("path");
+import fs from "fs";
+import path from "path";
 
 const openai = new OpenAI({
   apiKey: config.openAiApiKey,
