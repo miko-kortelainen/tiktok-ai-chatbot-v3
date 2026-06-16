@@ -21,7 +21,7 @@ const TestCommentPanel = () => {
         },
         body: JSON.stringify({
           user: username,
-          comment: commentText,
+          content: commentText,
           followRole: parseInt(followRole, 10),
         }),
       });
@@ -66,11 +66,7 @@ const TestCommentPanel = () => {
           onChange={(e) => setCommentText(e.target.value)}
           required
         />
-        <select
-          value={followRole}
-          onChange={(e) => setFollowRole(e.target.value)}
-          required
-        >
+        <select value={followRole} onChange={(e) => setFollowRole(e.target.value)} required>
           <option value="0">None</option>
           <option value="1">Follower</option>
           <option value="2">Friend</option>

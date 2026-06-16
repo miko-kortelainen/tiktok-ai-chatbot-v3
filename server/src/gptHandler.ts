@@ -1,5 +1,6 @@
 import { io } from ".";
 import { openRouterClient } from "./openrouterclient";
+import { TikTokComment } from "./types/comment.type";
 
 import { logger } from "./utils/logger";
 
@@ -7,9 +8,7 @@ const MODEL: string = "openai/gpt-oss-120b";
 
 const prompts = {
   generalUser: `Answer the TikTok live comments in a humorous and natural way.`, // Prompt for general users
-
   follower: ``, // Prompt for followers
-
   friend: ``, // Prompt for friends
 };
 
@@ -22,20 +21,9 @@ export function updatePrompts(defaultPrompt: string, followerPrompt: string, fri
   console.log(prompts);
 }
 
-// Function to handle generating the answer
-export async function handleAnswer(question: string, followRole: string) {
-  try {
-    const result: string = await callGPT(followRole, question);
-    if (!result) throw new Error("No response from GPT");
-    io.emit("Answer", result); // Emit the answer to the client
-  } catch (err) {
-    logger.error("Error on handleAnswer:", err);
-  }
-}
-
 // Function to handle fetching the gpt response
-async function callGPT(followRole: string, question: string): Promise<string> {
-  const systemPrompt = generateSystemMessage(followRole);
+export async function getAiResponse(comment: TikTokComment): Promise<string> {
+  const systemPrompt = generateSystemMessage(comment.followRole);
 
   try {
     const completion = await openRouterClient.chat.send({
@@ -48,16 +36,16 @@ async function callGPT(followRole: string, question: string): Promise<string> {
           },
           {
             role: "user",
-            content: question,
+            content: comment.content,
           },
         ],
       },
     });
 
-    const completionContent = completion.choices[0].message.content;
-    if (!completionContent) throw new Error("No output from GPT response");
-    console.log("GPT Response:", completionContent);
-    return completionContent;
+    const responseContent = completion.choices[0].message.content;
+    if (!responseContent) throw new Error("No output from GPT response");
+    console.log("GPT Response:", responseContent);
+    return responseContent;
   } catch (error) {
     console.error("Error on callGPT: ", error);
     throw error;

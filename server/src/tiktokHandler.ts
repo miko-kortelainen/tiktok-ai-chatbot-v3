@@ -5,6 +5,7 @@ import { io } from "./index";
 
 import { checkQueueForComments, handleComment, setCommentProcessing } from "./commentHandler.js";
 import { clearQueue } from "./commentQueue";
+import { TikTokComment } from "./types/comment.type";
 
 let tiktokUsername: string;
 
@@ -72,7 +73,12 @@ function handleTikTokLiveConnection() {
   tiktokLiveConnection.on(WebcastEvent.CHAT, (data) => {
     // Send the comment to handling with the neccesary parameters
     if (!data.user) return; // If user is undefined, return
-    handleComment(data.user.nickname, data.content, data.user.followStatus); // followRole: 0 = none; 1 = follower; 2 = friends
+    const comment: TikTokComment = {
+      user: data.user.nickname,
+      content: data.content,
+      followRole: data.user.followStatus,
+    };
+    handleComment(comment); // followRole: 0 = none; 1 = follower; 2 = friends
   });
 
   // Log if the connection is disconnected from the tiktok live

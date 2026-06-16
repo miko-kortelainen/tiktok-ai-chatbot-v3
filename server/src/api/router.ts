@@ -1,10 +1,11 @@
 import express, { type Request, type Response } from "express";
 import { handleAudioRequest } from "../ttsHandler";
-import { handleTestComment } from "../commentHandler";
+import { handleComment } from "../commentHandler";
 import { handleUsername } from "../tiktokHandler";
 import { logger } from "../utils/logger";
 import { deleteComment } from "../commentQueue";
 import { updatePrompts } from "../gptHandler";
+import { TikTokComment } from "../types/comment.type";
 
 const router = express.Router();
 router.use(express.json());
@@ -35,21 +36,17 @@ router.post("/username", (req: Request, res: Response) => {
 
 // function to handle the api calls of adding a test comment
 router.post("/testComment", (req: Request, res: Response) => {
-  const { user, comment, followRole } = req.body;
-  if (!user || !comment || followRole === undefined)
-    return res.status(400).send({ success: false, message: "All fields are required" });
+  const comment: TikTokComment = req.body;
+  if (!comment) return res.status(400).send({ success: false, message: "All fields are required" });
 
   logger.info("Test comment received successfully");
 
-  handleTestComment(user, comment, followRole);
+  handleComment(comment);
   res.send({ success: true, message: "Test comment received successfully" });
 });
 
 router.post("/updatePrompts", (req: Request, res: Response) => {
   const { defaultPrompt, followerPrompt, friendPrompt } = req.body;
-
-  if (!defaultPrompt || !followerPrompt || !friendPrompt)
-    return res.status(400).send({ success: false, message: "All prompts are required" });
 
   logger.info("Received updated prompts:");
   logger.info(`Default: ${defaultPrompt}`);

@@ -91,25 +91,22 @@ const ChatContainer = () => {
     }
   };
 
-  interface Comment {
-    type: string;
-    commentUsername: string;
-    commentText: string;
+  type TikTokComment = {
+    username: string;
+    content: string;
     followRole: string;
-  }
+  };
 
   useEffect(() => {
     if (!socket) return;
 
-    const onComment = (data: Comment) => {
-      if (data.type === "comment") {
-        addMsg({
-          username: data.commentUsername,
-          commentText: data.commentText,
-          followRole: data.followRole,
-          className: "comment",
-        });
-      }
+    const onComment = (comment: TikTokComment) => {
+      addMsg({
+        username: comment.username,
+        commentText: comment.content,
+        followRole: comment.followRole,
+        className: "comment",
+      });
     };
 
     const onAnswer = (answerText: string) => {

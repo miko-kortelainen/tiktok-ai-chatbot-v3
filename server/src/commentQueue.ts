@@ -1,9 +1,8 @@
 import { io } from "./index";
+import { TikTokComment } from "./types/comment.type";
 import { logger } from "./utils/logger";
 
-type Comment = { user: string; comment: string; followRole: string };
-
-let queue: Comment[] = [];
+let queue: TikTokComment[] = [];
 const maxSize = 10;
 
 const emitQueueUpdate = () => {
@@ -11,11 +10,15 @@ const emitQueueUpdate = () => {
   io.emit("UpdateQueue", queue);
 };
 
-export const enqueue = (item: Comment) => {
-  if (queue.length >= maxSize) return false;
+export const enqueue = (item: TikTokComment): boolean => {
+  if (queue.length >= maxSize) {
+    logger.info("QUEUE: queue is full");
+    return false;
+  }
+
   queue.push(item);
-  logger.queue(`Added: | "${item.comment}" |`);
   emitQueueUpdate();
+  logger.queue(`Added: | "${item.content}" |`);
   return true;
 };
 
@@ -28,7 +31,7 @@ export const dequeue = () => {
 export const deleteComment = (i: number) => {
   if (i < 0 || i >= queue.length) return false;
   const [deleted] = queue.splice(i, 1);
-  logger.queue(`Deleted: | ${deleted.user}: "${deleted.comment}"`);
+  logger.queue(`Deleted: | ${deleted.user}: "${deleted.content}"`);
   emitQueueUpdate();
   return true;
 };
