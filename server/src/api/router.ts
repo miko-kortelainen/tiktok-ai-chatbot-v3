@@ -38,6 +38,7 @@ router.post("/testComment", (req: Request, res: Response) => {
   const { user, comment, followRole } = req.body;
   if (!user || !comment || followRole === undefined)
     return res.status(400).send({ success: false, message: "All fields are required" });
+
   logger.info("Test comment received successfully");
 
   handleTestComment(user, comment, followRole);
@@ -49,6 +50,7 @@ router.post("/updatePrompts", (req: Request, res: Response) => {
 
   if (!defaultPrompt || !followerPrompt || !friendPrompt)
     return res.status(400).send({ success: false, message: "All prompts are required" });
+
   logger.info("Received updated prompts:");
   logger.info(`Default: ${defaultPrompt}`);
   logger.info(`Follower: ${followerPrompt}`);

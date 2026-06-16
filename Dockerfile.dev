@@ -1,7 +1,7 @@
 # Development Dockerfile with hot reloading
 
 # Frontend
-FROM node:24 AS frontend
+FROM node:24-slim AS frontend
 
 WORKDIR /app
 
@@ -19,13 +19,14 @@ EXPOSE 8081
 CMD ["pnpm", "run", "dev", "--", "--host"]
 
 # Backend
-FROM node:24 AS backend
+FROM node:24-slim AS backend
 
 WORKDIR /app
 
 RUN corepack enable
 
 COPY server/package.json ./
+COPY server/pnpm-workspace.yaml ./
 COPY server/pnpm-lock.yaml ./
 
 RUN pnpm install --frozen-lockfile

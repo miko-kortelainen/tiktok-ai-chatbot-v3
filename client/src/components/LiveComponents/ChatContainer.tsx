@@ -44,30 +44,49 @@ const ChatContainer = () => {
   const playAudio = async (text: string) => {
     if (!socket) return console.error("Socket not initialized");
     try {
+      console.log("Requesting TTS for text:", text);
       const res = await Axios.post("/api/audio", { text }, { responseType: "blob" });
 
-      if (res.status !== 200) throw new Error("audio fetch failed");
+      console.log("TTS response status:", res.status);
+      console.log("TTS response headers:", res.headers);
+      console.log("TTS response data type:", typeof res.data);
+      console.log("TTS response data size:", res.data?.size || 0);
 
-      if (!res.headers["content-type"]?.startsWith("audio/")) throw new Error("Server did not return audio");
+      if (res.status !== 200) {
+        console.error("Audio fetch failed with status:", res.status);
+        throw new Error(`audio fetch failed with status ${res.status}`);
+      }
+
+      if (!res.data || res.data.size === 0) {
+        console.error("Received empty audio blob");
+        throw new Error("Received empty audio data");
+      }
 
       addMsg({ username: "👽", commentText: text, followRole: "3", className: "answer" });
 
       const blob = res.data;
-      const audio = new Audio(URL.createObjectURL(blob));
+      const audioUrl = URL.createObjectURL(blob);
+      console.log("Created audio URL:", audioUrl);
+
+      const audio = new Audio(audioUrl);
 
       audio.onended = () => {
         console.log("Audio playback ended");
+        URL.revokeObjectURL(audioUrl);
         socket.emit("TextToSpeechStatus", { status: "ended" });
       };
 
       audio.onerror = (err) => {
         console.error("Audio playback error:", err);
+        URL.revokeObjectURL(audioUrl);
         socket.emit("TextToSpeechStatus", { status: "error" });
       };
 
+      console.log("Starting audio playback...");
       await audio.play();
+      console.log("Audio playback started successfully");
     } catch (err) {
-      console.error("TTS fetch error:", err);
+      console.error("TTS fetch/playback error:", err);
       socket.emit("TextToSpeechStatus", { status: "error" });
     }
   };

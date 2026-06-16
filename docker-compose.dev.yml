@@ -16,6 +16,7 @@ services:
       - NODE_ENV=development
       - PORT=8080
       - CI=true
+      - CHOKIDAR_USEPOLLING=true
 
   client:
     build:
@@ -31,3 +32,4 @@ services:
     environment:
       - VITE_API_URL=http://localhost:8080
       - CI=true
+      - CHOKIDAR_USEPOLLING=true

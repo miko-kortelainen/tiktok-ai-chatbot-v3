@@ -12,7 +12,6 @@ const USERNAME_MAX_LENGTH = 30;
 const USERNAME_MIN_LENGTH = 4;
 
 let tiktokLiveConnection: TikTokLiveConnection | null = null;
-//#region Connections and initialization
 
 export function handleTextToSpeechFinished(status: string) {
   logger.info(`Text to speech status: ${status}`);
@@ -22,6 +21,11 @@ export function handleTextToSpeechFinished(status: string) {
 
 // Handle the connection to the TikTok live and the incoming comments
 function handleTikTokLiveConnection() {
+  if (!config.tiktokSessionId || !config.ttTargetIdc) {
+    console.error("missing tt session id and/or targetIdc");
+    return;
+  }
+
   io.emit("ConnectionStatus", { type: "info", message: "Connecting..." });
 
   // Handle disconnection if there is already a connection to prevent multiple connections
@@ -31,14 +35,25 @@ function handleTikTokLiveConnection() {
   }
 
   // Handle connecting to the live
-  tiktokLiveConnection = new TikTokLiveConnection(tiktokUsername);
+  tiktokLiveConnection = new TikTokLiveConnection(tiktokUsername, {
+    authenticateWs: true,
+    session: {
+      cookie: {
+        type: "cookie",
+        value: {
+          sessionId: config.tiktokSessionId,
+          ttTargetIdc: config.ttTargetIdc,
+        },
+      },
+    },
+  });
 
   // Connect to the TikTok live
   tiktokLiveConnection
     .connect()
     .then((state) => {
       logger.info(
-        `Connected to roomId ${state.roomId}\n sessionID: ${config.tiktokSessionId}\n Live title: ${state.roomInfo?.title}`
+        `Connected to roomId ${state.roomId}\n sessionID: ${config.tiktokSessionId}\n Live title: ${state.roomInfo?.title}`,
       );
       io.emit("ConnectionStatus", {
         type: "success",
@@ -57,7 +72,7 @@ function handleTikTokLiveConnection() {
   tiktokLiveConnection.on(WebcastEvent.CHAT, (data) => {
     // Send the comment to handling with the neccesary parameters
     if (!data.user) return; // If user is undefined, return
-    handleComment(data.user.uniqueId, data.comment, data.user.followStatus); // followRole: 0 = none; 1 = follower; 2 = friends
+    handleComment(data.user.nickname, data.content, data.user.followStatus); // followRole: 0 = none; 1 = follower; 2 = friends
   });
 
   // Log if the connection is disconnected from the tiktok live

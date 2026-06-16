@@ -1,14 +1,9 @@
 import { io } from ".";
-import { config } from "./config/config";
+import { openRouterClient } from "./openrouterclient";
+
 import { logger } from "./utils/logger";
 
-import OpenAI from "openai";
-
-const openai = new OpenAI({
-  apiKey: config.openAiApiKey,
-});
-
-const MODEL: string = "gpt-5-nano";
+const MODEL: string = "openai/gpt-oss-120b";
 
 const prompts = {
   generalUser: `Answer the TikTok live comments in a humorous and natural way.`, // Prompt for general users
@@ -43,44 +38,26 @@ async function callGPT(followRole: string, question: string): Promise<string> {
   const systemPrompt = generateSystemMessage(followRole);
 
   try {
-    const response = await openai.responses.create({
-      model: MODEL,
-      input: [
-        {
-          role: "developer",
-          content: [
-            {
-              type: "input_text",
-              text: systemPrompt,
-            },
-          ],
-        },
-        {
-          role: "user",
-          content: [
-            {
-              type: "input_text",
-              text: question,
-            },
-          ],
-        },
-      ],
-      text: {
-        format: {
-          type: "text",
-        },
-        verbosity: "low",
+    const completion = await openRouterClient.chat.send({
+      chatRequest: {
+        model: MODEL,
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt,
+          },
+          {
+            role: "user",
+            content: question,
+          },
+        ],
       },
-      reasoning: {
-        effort: "minimal",
-        summary: null,
-      },
-      tools: [],
-      store: false,
     });
-    if (!response.output_text) throw new Error("No output from GPT response");
-    console.log("GPT Response:", response.output_text);
-    return response.output_text;
+
+    const completionContent = completion.choices[0].message.content;
+    if (!completionContent) throw new Error("No output from GPT response");
+    console.log("GPT Response:", completionContent);
+    return completionContent;
   } catch (error) {
     console.error("Error on callGPT: ", error);
     throw error;

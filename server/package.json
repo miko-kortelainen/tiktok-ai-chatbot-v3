@@ -17,6 +17,7 @@
     "dev:watch": "tsx watch --env-file=.env src/index.ts"
   },
   "dependencies": {
+    "@openrouter/sdk": "^0.12.79",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "openai": "^6.42.0",

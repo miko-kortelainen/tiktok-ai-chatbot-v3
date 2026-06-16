@@ -1,26 +1,23 @@
 import { Request, Response } from "express";
-import OpenAI from "openai";
-import { config } from "./config/config";
 import fs from "fs";
 import path from "path";
-
-const openai = new OpenAI({
-  apiKey: config.openAiApiKey,
-});
+import { openRouterClient } from "./openrouterclient";
 
 // endpoint /audio
 export async function handleAudioRequest(req: Request, res: Response) {
   try {
     const { text } = req.body;
     if (!text) {
+      console.error("No text provided in request body");
       return res.status(400).send("Text parameter is required.");
     }
 
-    console.log("Received text for TTS:", req.body);
+    console.log("Received text for TTS:", text);
 
     const audioFilePath = await generateTextToSpeech(text); // Generate the TTS file
     await streamSpeechFile(res, audioFilePath); // Stream the TTS file to the client
   } catch (err) {
+    console.error("Error in handleAudioRequest:", err);
     handleError(res, err);
   }
 }
@@ -29,15 +26,60 @@ export async function handleAudioRequest(req: Request, res: Response) {
 async function generateTextToSpeech(text: string): Promise<string> {
   const filePath = path.resolve(`./speech_${Date.now()}_${Math.random()}.mp3`);
 
-  const response = await openai.audio.speech.create({
-    model: "gpt-4o-mini-tts",
-    voice: "coral",
-    input: text,
-    instructions: "Speak in a cheerful and positive tone.",
-  });
+  console.log("Calling OpenRouter TTS API...");
 
-  const buffer = Buffer.from(await response.arrayBuffer());
+  let stream;
+  try {
+    stream = await openRouterClient.tts.createSpeech({
+      speechRequest: {
+        model: "hexgrad/kokoro-82m",
+        input: text,
+        voice: "ff_siwis",
+        responseFormat: "mp3",
+      },
+    });
+    console.log("TTS API call successful, received stream");
+  } catch (apiError) {
+    console.error("TTS API call failed:", apiError);
+    throw new Error(`TTS API error: ${apiError instanceof Error ? apiError.message : String(apiError)}`);
+  }
+
+  if (!stream) {
+    throw new Error("TTS API returned null/undefined stream");
+  }
+
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+
+  console.log("Reading stream chunks...");
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+  }
+
+  console.log(`Read ${chunks.length} chunks from stream`);
+
+  if (chunks.length === 0) {
+    throw new Error("TTS API returned empty stream - no audio data received");
+  }
+
+  const totalLength = chunks.reduce((sum, c) => sum + c.length, 0);
+  console.log(`Total audio data size: ${totalLength} bytes`);
+
+  if (totalLength === 0) {
+    throw new Error("TTS stream chunks have zero total length");
+  }
+
+  const buffer = new Uint8Array(totalLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    buffer.set(chunk, offset);
+    offset += chunk.length;
+  }
+
   await fs.promises.writeFile(filePath, buffer);
+  console.log(`Audio file written to: ${filePath}`);
   return filePath;
 }
 
@@ -65,5 +107,3 @@ function handleError(res: Response, error: any) {
     res.sendStatus(500);
   }
 }
-
-module.exports = { handleAudioRequest };
