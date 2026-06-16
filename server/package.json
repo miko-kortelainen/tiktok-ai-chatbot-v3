@@ -8,12 +8,13 @@
     "@types/express": "^5.0.4",
     "@types/ws": "^8.18.1",
     "dotenv": "^17.2.3",
+    "tsx": "^4.22.4",
     "typescript": "^6.0.3"
   },
   "scripts": {
     "build": "tsc",
     "dev": "node -r dotenv/config dist/server.js",
-    "dev:watch": "node --watch --env-file=.env --experimental-strip-types src/index.ts"
+    "dev:watch": "tsx watch --env-file=.env src/index.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",
