@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       axios:
-        specifier: ^1.13.1
+        specifier: ^1.18.0
         version: 1.18.0
       react:
         specifier: ^19.1.1
