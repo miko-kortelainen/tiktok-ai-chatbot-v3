@@ -1,15 +1,18 @@
 {
+  "name": "tiktok-ai-chatbot-backend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "devDependencies": {
     "@types/express": "^5.0.4",
     "@types/ws": "^8.18.1",
     "dotenv": "^17.2.3",
-    "tsx": "^4.22.4",
     "typescript": "^6.0.3"
   },
   "scripts": {
     "build": "tsc",
     "dev": "node -r dotenv/config dist/server.js",
-    "dev:watch": "tsx watch -r dotenv/config src/index.ts"
+    "dev:watch": "node --watch --env-file=.env --experimental-strip-types src/index.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",
