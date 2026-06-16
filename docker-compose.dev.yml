@@ -9,14 +9,13 @@ services:
     env_file:
       - ./server/.env
     volumes:
-      - ./server/src:/app/src
-      - ./server/package.json:/app/package.json
-      - ./server/tsconfig.json:/app/tsconfig.json
+      - ./server:/app
       - /app/node_modules
-    command: npm run dev:watch
+    command: pnpm run dev:watch
     environment:
       - NODE_ENV=development
       - PORT=8080
+      - CI=true
 
   client:
     build:
@@ -28,6 +27,7 @@ services:
     volumes:
       - ./client:/app
       - /app/node_modules
-    command: npm run dev -- --host
+    command: pnpm run dev -- --host
     environment:
       - VITE_API_URL=http://localhost:8080
+      - CI=true
