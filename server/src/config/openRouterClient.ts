@@ -9,5 +9,5 @@ export const TTS_MODEL: string = "hexgrad/kokoro-82m";
 export const TTS_VOICE: string = "am_adam";
 
 export const openRouterClient = new OpenRouter({
-  apiKey: config.openAiApiKey,
+  apiKey: config.openRouterApiKey,
 });
