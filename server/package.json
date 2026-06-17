@@ -8,11 +8,18 @@
     "@types/express": "^5.0.4",
     "@types/ws": "^8.18.1",
     "dotenv": "^17.2.3",
+    "tsup": "^8.5.1",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3"
   },
+  "tsup": {
+    "entry": ["src/**/*.ts"],
+    "format": ["esm"],
+    "clean": true,
+    "splitting": false
+  },
   "scripts": {
-    "build": "tsc",
+    "build": "tsup",
     "dev": "node -r dotenv/config dist/server.js",
     "dev:watch": "tsx watch --env-file=.env src/server.ts"
   },
