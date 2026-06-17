@@ -1,6 +1,6 @@
 import { Server } from "socket.io";
-import { getQueue } from "./commentQueue";
-import { handleTextToSpeechFinished, handleTikTokDisconnect, handleUsername } from "./tiktokHandler";
+import { getQueue } from "./services/commentQueue";
+import { handleTextToSpeechFinished, handleTikTokDisconnect, handleUsername } from "./services/tiktokHandler";
 
 export function initializeSocketHandlers(io: Server) {
   io.on("connection", (socket: any) => {

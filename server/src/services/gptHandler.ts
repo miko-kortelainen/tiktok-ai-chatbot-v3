@@ -1,10 +1,5 @@
-import { io } from ".";
-import { openRouterClient } from "./openrouterclient";
-import { TikTokComment } from "./types/comment.type";
-
-import { logger } from "./utils/logger";
-
-const MODEL: string = "openai/gpt-oss-120b";
+import { openRouterClient, TEXT_MODEL } from "../config/openRouterClient";
+import { TikTokComment } from "../models/comment.type";
 
 const prompts = {
   generalUser: `Answer the TikTok live comments in a humorous and natural way.`, // Prompt for general users
@@ -28,7 +23,7 @@ export async function getAiResponse(comment: TikTokComment): Promise<string> {
   try {
     const completion = await openRouterClient.chat.send({
       chatRequest: {
-        model: MODEL,
+        model: TEXT_MODEL,
         messages: [
           {
             role: "system",

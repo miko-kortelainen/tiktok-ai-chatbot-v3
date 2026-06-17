@@ -1,6 +1,6 @@
-import { io } from "./index";
-import { TikTokComment } from "./types/comment.type";
-import { logger } from "./utils/logger";
+import { io } from "../server";
+import { TikTokComment } from "../models/comment.type";
+import { logger } from "../utils/logger";
 
 let queue: TikTokComment[] = [];
 const maxSize = 10;

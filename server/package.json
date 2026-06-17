@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "node -r dotenv/config dist/server.js",
-    "dev:watch": "tsx watch --env-file=.env src/index.ts"
+    "dev:watch": "tsx watch --env-file=.env src/server.ts"
   },
   "dependencies": {
     "@openrouter/sdk": "^0.12.79",

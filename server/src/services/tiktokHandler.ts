@@ -1,13 +1,11 @@
 import { ControlEvent, TikTokLiveConnection, WebcastEvent } from "tiktok-live-connector";
-import { config } from "./config/config";
-import { logger } from "./utils/logger";
-import { io } from "./index";
+import { config } from "../config/envs";
+import { logger } from "../utils/logger";
+import { io } from "../server";
 
 import { checkQueueForComments, handleComment, setCommentProcessing } from "./commentHandler.js";
 import { clearQueue } from "./commentQueue";
-import { TikTokComment } from "./types/comment.type";
-
-let tiktokUsername: string;
+import { TikTokComment } from "../models/comment.type";
 
 const USERNAME_MAX_LENGTH = 30;
 const USERNAME_MIN_LENGTH = 4;
@@ -15,13 +13,13 @@ const USERNAME_MIN_LENGTH = 4;
 let tiktokLiveConnection: TikTokLiveConnection | null = null;
 
 export function handleTextToSpeechFinished(status: string) {
-  logger.info(`Text to speech status: ${status}`);
+  logger.info(`[3/3] Text to speech status: ${status}`);
   setCommentProcessing(true);
   checkQueueForComments();
 }
 
-// Handle the connection to the TikTok live and the incoming comments
-function handleTikTokLiveConnection() {
+// start the tiktok live connection and chat listener
+async function handleTikTokLiveConnection(tiktokUsername: string) {
   if (!config.tiktokSessionId || !config.ttTargetIdc) {
     console.error("missing tt session id and/or targetIdc");
     return;
@@ -35,7 +33,7 @@ function handleTikTokLiveConnection() {
     logger.info("Disconnected by new user.");
   }
 
-  // Handle connecting to the live
+  // tiktok live connection options
   tiktokLiveConnection = new TikTokLiveConnection(tiktokUsername, {
     authenticateWs: true,
     session: {
@@ -49,57 +47,43 @@ function handleTikTokLiveConnection() {
     },
   });
 
-  // Connect to the TikTok live
-  tiktokLiveConnection
-    .connect()
-    .then((state) => {
-      logger.info(
-        `Connected to roomId ${state.roomId}\n sessionID: ${config.tiktokSessionId}\n Live title: ${state.roomInfo?.title}`,
-      );
-      io.emit("ConnectionStatus", {
-        type: "success",
-        message: "Connected",
-      });
-    })
-    .catch((err) => {
-      logger.error("Failed to connect", err);
-      io.emit("ConnectionStatus", {
-        type: "error",
-        message: "Error connecting.",
-      });
-    });
+  try {
+    // connect to the tiktok live
+    const connectionState = await tiktokLiveConnection.connect();
 
-  // On a new comment event...
+    logger.info(
+      `Connected to roomId ${connectionState.roomId}\n sessionID: ${config.tiktokSessionId}\n Live title: ${connectionState.roomInfo?.title}`,
+    );
+  } catch (err) {
+    logger.error("Failed to connect to TikTok live: ", err);
+
+    io.emit("ConnectionStatus", {
+      type: "error",
+      message: "Error connecting to live.",
+    });
+  }
+
+  // tiktok live chat listener. "on a new chat =>"
   tiktokLiveConnection.on(WebcastEvent.CHAT, (data) => {
-    // Send the comment to handling with the neccesary parameters
     if (!data.user) return; // If user is undefined, return
+
     const comment: TikTokComment = {
       user: data.user.nickname,
       content: data.content,
       followRole: data.user.followStatus,
     };
-    handleComment(comment); // followRole: 0 = none; 1 = follower; 2 = friends
+
+    handleComment(comment);
   });
 
-  // Log if the connection is disconnected from the tiktok live
-  tiktokLiveConnection.on(ControlEvent.DISCONNECTED, () => logger.info("Disconnected from TikTok live"));
+  // tiktok live disconnection listener
+  tiktokLiveConnection.on(ControlEvent.DISCONNECTED, () => logger.info("Disconnected from the TikTok live."));
 
-  // Function to handle a error on the connection
-  tiktokLiveConnection.on(ControlEvent.ERROR, (err) => {
-    console.error("Error!", err);
-  });
+  // tiktok live error listener
+  tiktokLiveConnection.on(ControlEvent.ERROR, (err) => console.error("TikTok live connection error:", err));
 }
 
-// Function to handle the tiktok disconnection
-export function handleTikTokDisconnect() {
-  if (tiktokLiveConnection) {
-    tiktokLiveConnection.disconnect(); // Disconnect from the TikTok live
-    clearQueue(); // Clear the comment queue
-  }
-  setCommentProcessing(true); // Set comment processing back to true
-}
-
-// Function to handle the incoming TikTok username
+// handle the incoming TikTok username
 export function handleUsername(incomingUsername: string) {
   if (!incomingUsername) {
     // username is empty
@@ -119,11 +103,19 @@ export function handleUsername(incomingUsername: string) {
     incomingUsername = "@" + incomingUsername;
   }
 
-  tiktokUsername = incomingUsername; // Set the TikTok username to the incoming username
-  handleTikTokLiveConnection(); // Handle the connection to the TikTok live
+  handleTikTokLiveConnection(incomingUsername); // Handle the connection to the TikTok live
 }
 
-// Function to emit the connection status
+// handle the tiktok disconnection
+export function handleTikTokDisconnect() {
+  if (tiktokLiveConnection) {
+    tiktokLiveConnection.disconnect(); // Disconnect from the TikTok live
+    clearQueue(); // Clear the comment queue
+  }
+  setCommentProcessing(true); // Set comment processing back to true
+}
+
+// function to emit the connection status
 function emitConnectionStatus(type: string, message: string) {
   io.emit("ConnectionStatus", { type: type, message: message });
 }
