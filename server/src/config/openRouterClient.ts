@@ -6,7 +6,7 @@ export const TEXT_MODEL: string = "openai/gpt-oss-120b";
 
 // model and voice used for the text-to-speech (from openrouter)
 export const TTS_MODEL: string = "hexgrad/kokoro-82m";
-export const TTS_VOICE: string = "ff_siwis";
+export const TTS_VOICE: string = "am_adam";
 
 export const openRouterClient = new OpenRouter({
   apiKey: config.openAiApiKey,
