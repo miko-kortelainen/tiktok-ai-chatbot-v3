@@ -1,22 +1,21 @@
+import { useState } from "react";
+
 function UsernameInput(props: {
-  handleStart: (e: React.FormEvent<HTMLFormElement>) => void;
-  handleDisconnect: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
-  username: string;
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  connectionStatus: string;
+  handleStart: (username: string) => void;
+  handleDisconnect: () => void;
   isConnected: boolean;
 }) {
+  const [username, setUsername] = useState("");
+
   return (
     <div>
-      <div className="header-container">
-        <p className="connection-status">{props.connectionStatus}</p>
-      </div>
-      <form onSubmit={props.handleStart}>
+      <div className="header-container"></div>
+      <form onSubmit={() => props.handleStart(username)}>
         <div className="input-container" id="chat">
           <input
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             autoComplete="off"
-            value={props.username}
-            onChange={props.handleInputChange}
             className="input"
             type="text"
             placeholder="@tiktok_username"
@@ -29,7 +28,7 @@ function UsernameInput(props: {
               Stop
             </button>
           ) : (
-            <button className="button start" type="submit">
+            <button className="button start" onClick={() => props.handleStart(username)}>
               Start
             </button>
           )}

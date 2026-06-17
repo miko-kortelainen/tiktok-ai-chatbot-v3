@@ -1,5 +1,5 @@
-import { useContext, useEffect, useState } from "react";
-import { SocketContext } from "../SocketProvider";
+import { useEffect, useState } from "react";
+import { useSocket } from "../hooks/SocketProvider";
 import TypingIndicator from "../TypingIndicator";
 
 const MAX_MESSAGES = 2;
@@ -11,12 +11,18 @@ const followRoles: Record<string, string> = {
   "3": "AI",
 };
 
-interface Message {
+type Message = {
   className: string;
   username: string;
   commentText: string;
   followRole: string;
-}
+};
+
+type TikTokComment = {
+  username: string;
+  content: string;
+  followRole: string;
+};
 
 const MessageBox = ({ message }: { message: Message }) => (
   <h3 className={message.className}>
@@ -29,18 +35,45 @@ const MessageBox = ({ message }: { message: Message }) => (
 );
 
 const ChatContainer = () => {
-  const socket = useContext(SocketContext);
+  const socket = useSocket();
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
 
-  const addMsg = (m: Message) =>
+  useEffect(() => {
+    if (!socket) return;
+
+    const onComment = (comment: TikTokComment) => {
+      addMsg({
+        username: comment.username,
+        commentText: comment.content,
+        followRole: comment.followRole,
+        className: "comment",
+      });
+    };
+
+    const onAnswer = (data: { text: string; audio: string | null }) => {
+      console.log("Received Answer:", data.text);
+      playAudio(data.text, data.audio);
+    };
+
+    socket.on("Comment", onComment);
+    socket.on("Answer", onAnswer);
+    return () => {
+      socket.off("Comment");
+      socket.off("Answer");
+    };
+  }, [socket]);
+
+  function addMsg(m: Message) {
     setMessages((prev) => {
       const newMsgs = prev.length >= MAX_MESSAGES ? [m] : [...prev, m];
       setIsTyping(newMsgs.length === 1);
       return newMsgs;
     });
+  }
 
-  const playAudio = async (text: string, base64Audio: string | null) => {
+  async function playAudio(text: string, base64Audio: string | null) {
     if (!socket) return console.error("Socket not initialized");
 
     // Always show the text message
@@ -74,7 +107,6 @@ const ChatContainer = () => {
       const audio = new Audio(audioUrl);
 
       audio.onended = () => {
-        console.log("Audio playback ended");
         URL.revokeObjectURL(audioUrl);
         socket.emit("TextToSpeechStatus", { status: "ended" });
       };
@@ -85,45 +117,12 @@ const ChatContainer = () => {
         socket.emit("TextToSpeechStatus", { status: "error" });
       };
 
-      console.log("Starting audio playback...");
       await audio.play();
-      console.log("Audio playback started successfully");
     } catch (err) {
       console.error("TTS playback error:", err);
       socket.emit("TextToSpeechStatus", { status: "error" });
     }
-  };
-
-  type TikTokComment = {
-    username: string;
-    content: string;
-    followRole: string;
-  };
-
-  useEffect(() => {
-    if (!socket) return;
-
-    const onComment = (comment: TikTokComment) => {
-      addMsg({
-        username: comment.username,
-        commentText: comment.content,
-        followRole: comment.followRole,
-        className: "comment",
-      });
-    };
-
-    const onAnswer = (data: { text: string; audio: string | null }) => {
-      console.log("Received Answer:", data.text);
-      playAudio(data.text, data.audio);
-    };
-
-    socket.on("Comment", onComment);
-    socket.on("Answer", onAnswer);
-    return () => {
-      socket.off("Comment");
-      socket.off("Answer");
-    };
-  }, [socket]);
+  }
 
   return (
     <div className="chat-container">

@@ -1,18 +1,18 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
-import MainSite from "./components/MainSite.tsx";
-import ModerationPanel from "./components/ModerationPanel.tsx";
-import { SocketProvider } from "./components/SocketProvider.tsx";
+import { SocketProvider } from "./components/hooks/SocketProvider.tsx";
+import MainSite from "./components/main/MainSite.tsx";
+import ModerationPanel from "./components/moderation/ModerationPanel.tsx";
 
 function App() {
   return (
-    <Router>
-      <SocketProvider>
+    <SocketProvider>
+      <Router>
         <Routes>
           <Route path="/" Component={MainSite} />
           <Route path="/moderation" Component={ModerationPanel} />
         </Routes>
-      </SocketProvider>
-    </Router>
+      </Router>
+    </SocketProvider>
   );
 }
 

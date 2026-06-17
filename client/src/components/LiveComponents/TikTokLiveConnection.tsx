@@ -1,81 +1,61 @@
-import { tiktokLiveService } from "../../services/tiktokLiveService";
-import React, { useCallback, useContext, useEffect, useState } from "react";
-import { SocketContext } from "../SocketProvider";
-import UsernameInput from "../UsernameInput";
+import { tiktokLiveService } from "../../services/endpoints";
+import { useEffect, useState } from "react";
+import { useSocket } from "../hooks/SocketProvider";
+import UsernameInput from "../main/UsernameInput";
 
-const TikTokLiveConnection = () => {
-  const socket = useContext(SocketContext);
+function TikTokLiveConnection() {
+  const socket = useSocket();
 
-  const [username, setUsername] = useState("");
   const [connectionStatus, setConnectionStatus] = useState("");
   const [isConnectedToTikTok, setIsConnectedToTikTok] = useState(false);
 
-  const handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setUsername(event.target.value);
-  };
+  useEffect(() => {
+    if (!socket) return;
+    socket.on("ConnectionStatus", handleConnectionStatus);
+    socket.on("connect_error", handleConnectError);
 
-  const startLiveConnection = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+    return () => {
+      socket.off("ConnectionStatus");
+      socket.off("connect_error");
+    };
+  }, [socket]);
 
-    if (!socket || !socket?.connected) {
-      console.log("Socket not avaible");
-      return;
-    }
-
+  async function startLiveConnection(username: string) {
     console.log("Trying connection to live of user: ", username);
     tiktokLiveService.startLiveConnection(username);
-    setUsername("");
-  };
+  }
 
-  const disconnectFromLive = () => {
-    if (!socket) return console.error("Socket is not available");
+  function disconnectFromLive() {
+    if (!socket) return;
+    socket.emit("DisconnectFromTikTok");
     setConnectionStatus("");
     setIsConnectedToTikTok(false);
-    socket.emit("DisconnectFromTikTok");
-  };
+  }
 
-  const updateLiveConnectionStatus = useCallback((data: { type: string; message: string }) => {
+  function handleConnectionStatus(data: { type: string; message: string }) {
+    updateLiveConnectionStatus(data);
+  }
+
+  function handleConnectError(error: { message: string }) {
+    setConnectionStatus(`Error: ${error.message}`);
+  }
+
+  function updateLiveConnectionStatus(data: { type: string; message: string }) {
     const { type, message } = data;
     setConnectionStatus(`${type}: ${message}`);
     setIsConnectedToTikTok(type === "success");
-  }, []);
-
-  useEffect(() => {
-    const handleConnectionStatus = (data: { type: string; message: string }) => {
-      updateLiveConnectionStatus(data);
-    };
-
-    const handleConnectError = (error: { message: string }) => {
-      setConnectionStatus(`Error: ${error.message}`);
-    };
-
-    if (socket) {
-      // Add event listeners
-      socket.on("ConnectionStatus", handleConnectionStatus);
-      socket.on("connect_error", handleConnectError);
-    }
-
-    return () => {
-      // Cleanup
-      if (socket) {
-        socket.off("ConnectionStatus", handleConnectionStatus);
-        socket.off("connect_error", handleConnectError);
-      }
-    };
-  }, [socket, updateLiveConnectionStatus]);
+  }
 
   return (
     <div>
+      <p>status: {connectionStatus}</p>
       <UsernameInput
-        username={username}
-        handleInputChange={handleUsernameChange}
         handleStart={startLiveConnection}
         handleDisconnect={disconnectFromLive}
-        connectionStatus={connectionStatus}
         isConnected={isConnectedToTikTok}
       />
     </div>
   );
-};
+}
 
 export default TikTokLiveConnection;

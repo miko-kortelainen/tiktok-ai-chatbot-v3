@@ -1,8 +1,5 @@
 import { useState } from "react";
 
-/**
- * This component allows you to send test comments thatll go through the same process as comments that would've come from a tt live.
- */
 const TestCommentPanel = () => {
   const [username, setUsername] = useState("");
   const [commentText, setCommentText] = useState("");
@@ -10,7 +7,7 @@ const TestCommentPanel = () => {
   const [error, setError] = useState("");
 
   // This function sends a test comment to the server
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
