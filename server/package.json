@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "devDependencies": {
+    "@types/swagger-ui-express": "^4.1.8",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.4",
     "@types/ws": "^8.18.1",
@@ -13,22 +14,29 @@
     "typescript": "^6.0.3"
   },
   "tsup": {
-    "entry": ["src/**/*.ts"],
-    "format": ["esm"],
+    "entry": [
+      "src/**/*.ts"
+    ],
+    "format": [
+      "esm"
+    ],
     "clean": true,
     "splitting": false
   },
   "scripts": {
     "build": "tsup",
-    "dev": "node -r dotenv/config dist/server.js",
+    "dev": "tsx --env-file=.env src/server.ts",
     "dev:watch": "tsx watch --env-file=.env src/server.ts"
   },
   "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^8.1.0",
     "@openrouter/sdk": "^0.12.79",
+    "@tiktok-ai-chatbot/shared": "workspace:*",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "openai": "^6.42.0",
     "socket.io": "^4.8.3",
+    "swagger-ui-express": "^5.0.1",
     "tiktok-live-connector": "^2.4.0"
   }
 }

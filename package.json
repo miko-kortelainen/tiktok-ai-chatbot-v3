@@ -1,0 +1,10 @@
+{
+  "name": "tiktok-ai-chatbot-v3",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "client",
+    "server",
+    "shared"
+  ]
+}

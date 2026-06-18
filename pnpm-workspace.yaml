@@ -1,0 +1,9 @@
+packages:
+  - "client"
+  - "server"
+  - "shared"
+
+allowBuilds:
+  "@openrouter/sdk": true
+  "@scarf/scarf": false
+  esbuild: true

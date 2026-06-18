@@ -1,0 +1,14 @@
+{
+  "name": "@tiktok-ai-chatbot/shared",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./comment": "./src/comment.ts"
+  },
+  "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^8.1.0",
+    "zod": "^4.4.3"
+  }
+}
