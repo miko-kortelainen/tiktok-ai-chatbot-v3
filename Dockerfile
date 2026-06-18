@@ -3,40 +3,39 @@ WORKDIR /app
 
 RUN corepack enable
 
-COPY client/package.json client/pnpm-lock.yaml ./client/
-COPY server/package.json server/pnpm-lock.yaml server/pnpm-workspace.yaml ./server/
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY client/package.json ./client/
+COPY server/package.json ./server/
+COPY shared/package.json ./shared/
 ENV CI=true
 
-# install backend deps
-WORKDIR /app/server
-RUN pnpm i --frozen-lockfile
-
-# install frontend deps
-WORKDIR /app/client
-RUN pnpm i --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 WORKDIR /app
 COPY client ./client
 COPY server ./server
+COPY shared ./shared
 
-RUN cd client && pnpm run build
-RUN cd server && pnpm run build
+RUN pnpm --filter tiktok-ai-chatbot-frontend build
+RUN pnpm --filter tiktok-ai-chatbot-backend build
 
 FROM node:24-slim AS runner
 WORKDIR /app
 
 RUN corepack enable
 
-COPY server/package.json server/pnpm-lock.yaml server/pnpm-workspace.yaml ./server/
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY server/package.json ./server/
+COPY shared/package.json ./shared/
 
 ENV NODE_ENV=production
 ENV CI=true
 
-WORKDIR /app/server
-RUN pnpm i --prod --frozen-lockfile
+RUN pnpm install --prod --frozen-lockfile
 
 COPY --from=builder /app/server/dist ./dist
 COPY --from=builder /app/client/dist ./dist/client
+COPY --from=builder /app/shared ./shared
 
 EXPOSE 3001
 

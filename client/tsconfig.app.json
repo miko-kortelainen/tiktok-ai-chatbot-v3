@@ -10,11 +10,6 @@
 
     /* Bundler mode */
     "moduleResolution": "bundler",
-    "baseUrl": ".",
-    "paths": {
-      "@tiktok-ai-chatbot/shared": ["../shared/src/index.ts"],
-      "@tiktok-ai-chatbot/shared/*": ["../shared/src/*"]
-    },
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",

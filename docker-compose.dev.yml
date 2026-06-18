@@ -9,9 +9,11 @@ services:
     env_file:
       - ./server/.env
     volumes:
-      - ./server:/app
+      - .:/app
       - /app/node_modules
-    command: pnpm run dev:watch
+      - /app/server/node_modules
+      - /app/shared/node_modules
+    command: pnpm --filter tiktok-ai-chatbot-backend dev:watch
     environment:
       - NODE_ENV=development
       - PORT=8080
@@ -26,9 +28,11 @@ services:
     ports:
       - "8081:8081"
     volumes:
-      - ./client:/app
+      - .:/app
       - /app/node_modules
-    command: pnpm run dev -- --host
+      - /app/client/node_modules
+      - /app/shared/node_modules
+    command: pnpm --filter tiktok-ai-chatbot-frontend dev -- --host
     environment:
       - VITE_API_URL=http://localhost:8080
       - CI=true
