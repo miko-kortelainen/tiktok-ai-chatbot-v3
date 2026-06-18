@@ -1,23 +1,25 @@
 import type { Prompts } from "../components/moderation/PromptEditPanel";
 import api from "./api";
 
-export const tiktokLiveService = {
-  async startLiveConnection(username: string) {
-    try {
-      const response = await api.post("/api/username", { username });
-      return response.data;
-    } catch {
-      console.log("Failed connection to tiktok live");
-    }
-  },
+export const startLiveConnection = async (username: string): Promise<boolean> => {
+  try {
+    const response = await api.post(`/api/start-connection/${username}`);
+    if (response.status === 200) return true;
+
+    return false;
+  } catch {
+    console.log("Failed connection to tiktok live");
+    return false;
+  }
 };
 
 // Handle deletion of a comment from the queue
 export const deleteCommentFromQueue = async (index: number): Promise<boolean> => {
   try {
-    await api.delete("/api/deleteComment", { data: { index } });
+    const response = await api.delete(`/api/comment/${index}`);
+    if (response.status === 204) return true;
 
-    return true;
+    return false;
   } catch {
     console.error("Failed to delete comment from queue");
     return false;

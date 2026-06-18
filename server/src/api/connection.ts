@@ -4,13 +4,18 @@ import { logger } from "../utils/logger";
 
 const router = express.Router();
 
-// handle the incoming tiktok username from the client
-router.post("/username", (req: Request, res: Response) => {
-  const { username } = req.body;
-  if (!username) return res.status(400).send({ success: false, message: "Username is required" });
+// POST: /api/start-connection/:username
+// recieves the tiktok username and begins the connection
+router.post("/start-connection/:username", (req: Request, res: Response) => {
+  const username = req.params.username as string;
+  if (!username) {
+    return res.status(400).send();
+  }
+
   logger.info(`Trying connection to LIVE by: ${username}`);
+
   handleUsername(username);
-  res.json({ success: true, message: "Username received successfully" });
+  res.status(200).send();
 });
 
 export default router;

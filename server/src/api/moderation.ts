@@ -34,13 +34,13 @@ router.post("/updatePrompts", (req: Request, res: Response) => {
 });
 
 // handle the api call of removing a comment from the queue
-router.delete("/deleteComment", (req: Request, res: Response) => {
-  const { index } = req.body;
-  if (index === undefined) return res.status(400).send({ success: false, message: "Index is required" });
+router.delete("/comment/:index", (req: Request, res: Response) => {
+  const index = parseInt(req.params.index as string, 10);
+  if (Number.isNaN(index)) return res.status(400).send();
 
   const success = deleteComment(index);
-  if (!success) return res.status(400).send({ success: false, message: "Failed to delete comment" });
-  res.send({ success: true, message: "Comment deleted successfully" });
+  if (!success) return res.status(400).send();
+  res.status(204).send();
 });
 
 export default router;
