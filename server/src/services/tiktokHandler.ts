@@ -107,12 +107,17 @@ export function handleUsername(incomingUsername: string) {
 }
 
 // handle the tiktok disconnection
-export function handleTikTokDisconnect() {
-  if (tiktokLiveConnection) {
-    tiktokLiveConnection.disconnect(); // Disconnect from the TikTok live
+export async function handleTikTokDisconnect(): Promise<boolean> {
+  if (!tiktokLiveConnection) return false;
+  try {
+    await tiktokLiveConnection.disconnect(); // Disconnect from the TikTok live
     clearQueue(); // Clear the comment queue
+    setCommentProcessing(true); // Set comment processing back to true
+    return true;
+  } catch {
+    console.error("Failed to disconnect from tiktok live");
+    return false;
   }
-  setCommentProcessing(true); // Set comment processing back to true
 }
 
 // function to emit the connection status

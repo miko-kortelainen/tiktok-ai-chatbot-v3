@@ -1,7 +1,7 @@
 import { extendZodWithOpenApi, OpenAPIRegistry, OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
 import { CommentDeletionRequestSchema, CommentRequestSchema } from "@tiktok-ai-chatbot/shared/comment";
-import { PromptRequestSchema } from "@tiktok-ai-chatbot/shared";
+import { ConnectionRequestSchema, PromptRequestSchema } from "@tiktok-ai-chatbot/shared";
 
 extendZodWithOpenApi(z);
 
@@ -11,6 +11,7 @@ registry.registerPath({
   method: "post",
   path: "/api/comment/",
   summary: "Submit a new comment to the queue",
+  tags: ["moderation"],
   request: {
     body: {
       content: {
@@ -33,7 +34,8 @@ registry.registerPath({
 registry.registerPath({
   method: "post",
   path: "/api/prompts/",
-  summary: "Update system prompts",
+  summary: "Update system prompts used by the AI",
+  tags: ["moderation"],
   request: {
     body: {
       content: {
@@ -56,16 +58,50 @@ registry.registerPath({
 registry.registerPath({
   method: "delete",
   path: "/api/comment/",
+  tags: ["moderation"],
   summary: "Delete a comment from the queue",
   request: {
     params: CommentDeletionRequestSchema,
   },
   responses: {
     204: {
-      description: "Prompts updated.",
+      description: "Comment deleted.",
     },
     400: {
       description: "Invalid request body.",
+    },
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/start-connection/",
+  tags: ["connection handling"],
+  summary: "Start the connection to the live",
+  request: {
+    params: ConnectionRequestSchema,
+  },
+  responses: {
+    204: {
+      description: "Disconnected from the live",
+    },
+    400: {
+      description: "Invalid request body.",
+    },
+  },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/stop-connection/",
+  summary: "Disconnect from the tiktok livestream",
+  tags: ["connection handling"],
+  responses: {
+    204: {
+      description: "Disconnected from the live",
+    },
+    500: {
+      description: "Internal server error whilst trying to disconnect.",
     },
   },
 });
