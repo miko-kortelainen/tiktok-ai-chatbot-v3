@@ -1,4 +1,4 @@
-import { tiktokLiveService } from "../../services/endpoints";
+import { startLiveConnection } from "../../services/endpoints";
 import { useEffect, useState } from "react";
 import { useSocket } from "../hooks/SocketProvider";
 import UsernameInput from "../main/UsernameInput";
@@ -22,7 +22,7 @@ function TikTokLiveConnection() {
 
   async function startLiveConnection(username: string) {
     console.log("Trying connection to live of user: ", username);
-    tiktokLiveService.startLiveConnection(username);
+    startLiveConnection(username);
   }
 
   function disconnectFromLive() {

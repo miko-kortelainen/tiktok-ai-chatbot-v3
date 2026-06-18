@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { sendTestComment } from "../../services/endpoints";
+import type { CommentRequest } from "@tiktok-ai-chatbot/shared";
 
 const TestCommentPanel = () => {
   const [username, setUsername] = useState("");
@@ -6,40 +8,20 @@ const TestCommentPanel = () => {
   const [followRole, setFollowRole] = useState("0");
   const [error, setError] = useState("");
 
-  // This function sends a test comment to the server
-  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  // handle sending the comment to backend
+  async function handleSendComment() {
+    const comment: CommentRequest = {
+      user: username,
+      content: commentText,
+      followRole: "test",
+    };
 
-    try {
-      const response = await fetch("/api/testComment", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user: username,
-          content: commentText,
-          followRole: parseInt(followRole, 10),
-        }),
-      });
-
-      if (response.ok) {
-        // Comment sent successfully
-        setUsername("");
-        setCommentText("");
-        setFollowRole("0");
-        setError("");
-      } else {
-        // Handle error response
-        console.error("Failed to send test comment");
-        setError("Error adding a comment");
-      }
-    } catch (error) {
-      // Handle network or other errors
-      console.error("Error sending test comment:", error);
-      setError("Unknown error.");
+    const success = await sendTestComment(comment);
+    if (!success) {
+      setError("failed to add comment");
     }
-  };
+    setError("");
+  }
 
   return (
     <div className="mod-comment-panel">
@@ -48,7 +30,8 @@ const TestCommentPanel = () => {
         <p>Add a custom comment to the queue.</p>
       </div>
       {error && <p className="error">{error}</p>}
-      <form className="mod-comment-inside" onSubmit={handleSubmit}>
+
+      <div>
         <input
           type="text"
           placeholder="Username"
@@ -68,10 +51,10 @@ const TestCommentPanel = () => {
           <option value="1">Follower</option>
           <option value="2">Friend</option>
         </select>
-        <button type="submit" className="add-comment-btn apply-button">
+        <button type="submit" className="add-comment-btn apply-button" onClick={handleSendComment}>
           Add comment
         </button>
-      </form>
+      </div>
     </div>
   );
 };

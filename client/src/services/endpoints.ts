@@ -1,4 +1,5 @@
 import type { Prompts } from "../components/moderation/PromptEditPanel";
+import type { CommentRequest } from "@tiktok-ai-chatbot/shared";
 import api from "./api";
 
 export const startLiveConnection = async (username: string): Promise<boolean> => {
@@ -33,6 +34,17 @@ export const updatePrompts = async (prompts: Prompts): Promise<boolean> => {
     return true;
   } catch {
     console.error("Failed to update prompts");
+    return false;
+  }
+};
+
+export const sendTestComment = async (comment: CommentRequest): Promise<boolean> => {
+  try {
+    await api.post("/api/comment", comment);
+
+    return true;
+  } catch {
+    console.error("Failed to send test comment");
     return false;
   }
 };

@@ -1,22 +1,16 @@
 import { extendZodWithOpenApi, OpenAPIRegistry, OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
-import { CommentRequestSchema } from "@tiktok-ai-chatbot/shared/comment";
+import { CommentDeletionRequestSchema, CommentRequestSchema } from "@tiktok-ai-chatbot/shared/comment";
+import { PromptRequestSchema } from "@tiktok-ai-chatbot/shared";
 
 extendZodWithOpenApi(z);
 
 const registry = new OpenAPIRegistry();
 
-registry.register("CommentRequest", CommentRequestSchema);
-
-const ApiMessageSchema = z.object({
-  success: z.boolean().openapi({ example: true }),
-  message: z.string().openapi({ example: "Test comment received successfully" }),
-});
-
 registry.registerPath({
   method: "post",
-  path: "/api/testComment",
-  summary: "Submit a test TikTok comment",
+  path: "/api/comment/",
+  summary: "Submit a new comment to the queue",
   request: {
     body: {
       content: {
@@ -29,19 +23,49 @@ registry.registerPath({
   responses: {
     200: {
       description: "Comment accepted.",
-      content: {
-        "application/json": {
-          schema: ApiMessageSchema,
-        },
-      },
     },
     400: {
       description: "Invalid request body.",
+    },
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/prompts/",
+  summary: "Update system prompts",
+  request: {
+    body: {
       content: {
         "application/json": {
-          schema: ApiMessageSchema,
+          schema: PromptRequestSchema,
         },
       },
+    },
+  },
+  responses: {
+    200: {
+      description: "Prompts updated.",
+    },
+    400: {
+      description: "Invalid request body.",
+    },
+  },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/api/comment/",
+  summary: "Delete a comment from the queue",
+  request: {
+    params: CommentDeletionRequestSchema,
+  },
+  responses: {
+    204: {
+      description: "Prompts updated.",
+    },
+    400: {
+      description: "Invalid request body.",
     },
   },
 });

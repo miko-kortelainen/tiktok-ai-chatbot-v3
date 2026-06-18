@@ -1,3 +1,4 @@
+import { PromptRequest } from "@tiktok-ai-chatbot/shared";
 import { openRouterClient, TEXT_MODEL } from "../config/openRouterClient";
 import { TikTokComment } from "../models/comment.type";
 
@@ -8,10 +9,10 @@ const prompts = {
 };
 
 // updates the prompts coming from the client
-export function updatePrompts(defaultPrompt: string, followerPrompt: string, friendPrompt: string) {
-  prompts.generalUser = defaultPrompt;
-  prompts.follower = followerPrompt;
-  prompts.friend = friendPrompt;
+export function updatePrompts(recieved: PromptRequest) {
+  prompts.generalUser = recieved.defaultPrompt || "";
+  prompts.follower = recieved.followerPrompt || "";
+  prompts.friend = recieved.friendPrompt || "";
 
   console.log(prompts);
 }
